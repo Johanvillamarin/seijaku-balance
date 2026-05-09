@@ -1,20 +1,6 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-transporter.verify((error) => {
-  if (error) {
-    console.warn('⚠️  Nodemailer no pudo conectar:', error.message);
-  } else {
-    console.log('✅ Nodemailer listo para enviar emails');
-  }
-});
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 async function enviarConfirmacion(reserva) {
   const { Nombre, email, Servicio, fecha_reserva, hora_reserva, cancelToken } = reserva;
@@ -22,11 +8,11 @@ async function enviarConfirmacion(reserva) {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  const cancelUrl = `https://seijaku-balance-production.up.railway.app/api/reservas/cancelar/${cancelToken}`;
+  const cancelUrl = `http://localhost:3000/api/reservas/cancelar/${cancelToken}`;
 
-  const emailCliente = {
-    from: `"Seijaku Balance 🌸" <${process.env.EMAIL_USER}>`,
+  const msgCliente = {
     to: email,
+    from: process.env.EMAIL_USER,
     subject: `✅ Reserva confirmada - ${Servicio}`,
     html: `
       <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #faf9f7; padding: 40px; border-radius: 8px;">
@@ -50,9 +36,9 @@ async function enviarConfirmacion(reserva) {
     `,
   };
 
-  const emailPropietario = {
-    from: `"Sistema Seijaku 🌸" <${process.env.EMAIL_USER}>`,
+  const msgPropietario = {
     to: process.env.EMAIL_OWNER,
+    from: process.env.EMAIL_USER,
     subject: `📋 Nueva reserva: ${Nombre} - ${Servicio}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f5f5f5; border-radius: 8px;">
@@ -70,8 +56,8 @@ async function enviarConfirmacion(reserva) {
 
   try {
     await Promise.all([
-      transporter.sendMail(emailCliente),
-      transporter.sendMail(emailPropietario),
+      sgMail.send(msgCliente),
+      sgMail.send(msgPropietario),
     ]);
     console.log(`📧 Emails de confirmación enviados a ${email}`);
   } catch (error) {
@@ -85,9 +71,9 @@ async function enviarCancelacion(reserva) {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  const emailCliente = {
-    from: `"Seijaku Balance 🌸" <${process.env.EMAIL_USER}>`,
+  const msgCliente = {
     to: email,
+    from: process.env.EMAIL_USER,
     subject: `❌ Reserva cancelada - ${Servicio}`,
     html: `
       <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #faf9f7; padding: 40px; border-radius: 8px;">
@@ -99,15 +85,14 @@ async function enviarCancelacion(reserva) {
           <p style="margin: 8px 0; color: #2c4a3e;"><strong>Fecha:</strong> ${fechaFormateada}</p>
           <p style="margin: 8px 0; color: #2c4a3e;"><strong>Hora:</strong> ${hora_reserva}</p>
         </div>
-        <p style="color: #555;">Si deseas hacer una nueva reserva visita nuestra web.</p>
         <p style="color: #aaa; font-size: 12px; text-align: center;">Seijaku Balance · Centro de Masajes y Aeroyoga</p>
       </div>
     `,
   };
 
-  const emailPropietario = {
-    from: `"Sistema Seijaku 🌸" <${process.env.EMAIL_USER}>`,
+  const msgPropietario = {
     to: process.env.EMAIL_OWNER,
+    from: process.env.EMAIL_USER,
     subject: `🚫 Reserva cancelada: ${Nombre} - ${Servicio}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #f5f5f5; border-radius: 8px;">
@@ -124,8 +109,8 @@ async function enviarCancelacion(reserva) {
 
   try {
     await Promise.all([
-      transporter.sendMail(emailCliente),
-      transporter.sendMail(emailPropietario),
+      sgMail.send(msgCliente),
+      sgMail.send(msgPropietario),
     ]);
     console.log(`📧 Emails de cancelación enviados a ${email}`);
   } catch (error) {
