@@ -8,10 +8,14 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 app.use(cors({
-origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-methods: ['GET', 'POST', 'DELETE', 'PUT'],
-allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    origin: [
+      'http://localhost:5173',
+      'https://seijaku-balance.vercel.app'
+    ],
+    methods: ['GET', 'POST', 'DELETE', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+  
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
