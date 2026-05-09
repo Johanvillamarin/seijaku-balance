@@ -44,7 +44,8 @@ export default function Chatbot() {
         .slice(-6)
         .map(m => ({ role: m.role, content: m.content }));
 
-      const res = await fetch('http://localhost:3000/api/chatbot/mensaje', {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const res = await fetch(`${API_URL}/chatbot/mensaje`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
