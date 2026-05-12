@@ -3,9 +3,9 @@ const { getCalendarClient } = require('../config/googleCalendar');
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
 
 async function crearEvento(reserva) {
+  const calendar = getCalendarClient();
   console.log('📅 CALENDAR_ID:', CALENDAR_ID);
   console.log('📅 Calendar client:', calendar ? 'OK' : 'NULL');
-  const calendar = getCalendarClient();
   if (!calendar || !CALENDAR_ID) {
     console.warn('⚠️  Google Calendar no disponible. Saltando creación de evento.');
     return null;
